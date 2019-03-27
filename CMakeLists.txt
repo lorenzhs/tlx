@@ -8,7 +8,7 @@
 # All rights reserved. Published under the Boost Software License, Version 1.0
 ################################################################################
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.9.2)
 
 if(NOT TARGET tlx)
 
@@ -217,31 +217,9 @@ endif()
 
 if(TLX_USE_LTO)
   # build with link-time optimization
-  include(CheckCXXCompilerFlag)
-  check_cxx_compiler_flag(-flto CXX_HAS_LTO_FLAG)
-
-  if(CMAKE_BUILD_TYPE MATCHES Release AND CXX_HAS_LTO_FLAG)
-    find_program(CMAKE_GCC_AR
-      NAMES ${_CMAKE_TOOLCHAIN_PREFIX}gcc-ar${_CMAKE_TOOLCHAIN_SUFFIX}
-      HINTS ${_CMAKE_TOOLCHAIN_LOCATION})
-
-    find_program(CMAKE_GCC_NM
-      NAMES ${_CMAKE_TOOLCHAIN_PREFIX}gcc-nm
-      HINTS ${_CMAKE_TOOLCHAIN_LOCATION})
-
-    find_program(CMAKE_GCC_RANLIB
-      NAMES ${_CMAKE_TOOLCHAIN_PREFIX}gcc-ranlib
-      HINTS ${_CMAKE_TOOLCHAIN_LOCATION})
-
-    if(CMAKE_GCC_AR AND CMAKE_GCC_NM AND CMAKE_GCC_RANLIB)
-      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
-      set(CMAKE_AR "${CMAKE_GCC_AR}")
-      set(CMAKE_NM "${CMAKE_GCC_NM}")
-      set(CMAKE_RANLIB "${CMAKE_GCC_RANLIB}")
-    else()
-      message(WARNING "GCC indicates LTO support, but binutils wrappers could not be found. Disabling LTO.")
-    endif()
-  endif()
+  include(CheckIPOSupported)
+  check_ipo_supported()
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
 message(STATUS "TLX CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
